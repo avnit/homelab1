@@ -1,0 +1,16 @@
+# Copy to terraform.tfvars and fill in. Keep the real file out of git.
+
+proxmox_endpoint  = "https://192.168.0.160:8006/" # pve7
+proxmox_api_token = "terraform@pve!coolify=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+
+node_name    = "pve7"
+vm_datastore = "local-lvm"
+bridge       = "vmbr0"
+
+# Static IP recommended so the dashboard URL never moves.
+# Pick something outside your DHCP pool, e.g.:
+ipv4_address = "192.168.0.40/24"
+ipv4_gateway = "192.168.0.1"
+
+ssh_public_key = "ssh-ed25519 AAAA... abambah@workstation"
+auto_install   = true

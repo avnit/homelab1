@@ -1,0 +1,15 @@
+# Copy to terraform.tfvars and fill in. Keep the real file out of git.
+
+proxmox_endpoint     = "https://192.168.0.192:8006/" # pve6  (pve7 = 192.168.0.160)
+proxmox_api_token    = "terraform@pve!sandbox=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+proxmox_ssh_username = "root"
+
+node_name    = "pve6"
+vm_datastore = "local-lvm" # or your NVMe thin pool, e.g. "nvme-thin"
+bridge       = "vmbr0"
+
+# From your workstation: cat ~/.ssh/id_ed25519.pub
+ssh_public_key = "ssh-ed25519 AAAA... abambah@workstation"
+
+# Set false if you'd rather kick the build manually after inspecting the VM
+auto_build = true

@@ -1,0 +1,82 @@
+#cloud-config
+hostname: khuedoan-homelab-sandbox
+manage_etc_hosts: true
+
+users:
+  - name: homelab
+    groups: [sudo, docker]
+    shell: /bin/bash
+    lock_passwd: true
+    sudo: 'ALL=(ALL) NOPASSWD:ALL'
+    ssh_authorized_keys:
+      - ${ssh_public_key}
+
+package_update: true
+package_upgrade: false
+packages:
+  - curl
+  - git
+  - ca-certificates
+  - xz-utils
+  - qemu-guest-agent
+
+write_files:
+  - path: /usr/local/bin/bootstrap-homelab.sh
+    permissions: '0755'
+    owner: root:root
+    content: |
+      #!/usr/bin/env bash
+      set -euo pipefail
+      LOG=/home/homelab/homelab-build.log
+      exec > >(tee -a "$LOG") 2>&1
+      echo "[bootstrap] $(date -u) starting khuedoan/homelab k3d dev build"
+
+      # Make nix available in this non-interactive shell
+      if [ -e /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]; then
+        . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+      fi
+
+      cd /home/homelab
+      if [ ! -d homelab/.git ]; then
+        git clone https://github.com/khuedoan/homelab.git
+      fi
+      cd homelab
+      git checkout dev
+
+      echo "[bootstrap] entering nix dev shell and running 'make' (15-30 min)..."
+      nix develop --command make
+
+      echo "[bootstrap] $(date -u) DONE."
+      echo "[bootstrap] UI (from THIS vm's localhost): https://home.127-0-0-1.nip.io"
+      echo "[bootstrap] admin creds: see docs/installation/post-installation.md"
+
+  - path: /etc/systemd/system/homelab-build.service
+    permissions: '0644'
+    owner: root:root
+    content: |
+      [Unit]
+      Description=Bootstrap khuedoan/homelab k3d dev cluster
+      After=network-online.target docker.service
+      Wants=network-online.target
+      [Service]
+      Type=oneshot
+      User=homelab
+      Group=homelab
+      WorkingDirectory=/home/homelab
+      TimeoutStartSec=3600
+      RemainAfterExit=true
+      ExecStart=/usr/local/bin/bootstrap-homelab.sh
+      [Install]
+      WantedBy=multi-user.target
+
+runcmd:
+  - systemctl enable --now qemu-guest-agent
+  - curl -fsSL https://get.docker.com | sh
+  - usermod -aG docker homelab
+  - sh -c 'curl --proto "=https" --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install --no-confirm'
+  - systemctl daemon-reload
+%{ if auto_build ~}
+  - systemctl enable --now homelab-build.service
+%{ endif ~}
+
+final_message: "khuedoan/homelab sandbox base image ready. Build ${auto_build ? "is running -> tail /home/homelab/homelab-build.log" : "NOT started -> run: sudo systemctl start homelab-build"}."
