@@ -1,0 +1,45 @@
+#cloud-config
+hostname: coolify
+manage_etc_hosts: true
+
+users:
+  - name: coolify
+    groups: [sudo, docker]
+    shell: /bin/bash
+    lock_passwd: true
+    sudo: 'ALL=(ALL) NOPASSWD:ALL'
+    ssh_authorized_keys:
+      - ${ssh_public_key}
+
+package_update: true
+packages:
+  - curl
+  - ca-certificates
+  - qemu-guest-agent
+
+write_files:
+  - path: /etc/systemd/system/coolify-install.service
+    permissions: '0644'
+    content: |
+      [Unit]
+      Description=Install Coolify (official installer)
+      After=network-online.target
+      Wants=network-online.target
+      [Service]
+      Type=oneshot
+      RemainAfterExit=true
+      # Download first (kept at /root/coolify-install.sh so you can audit it), then run.
+      ExecStartPre=/usr/bin/curl -fsSL https://cdn.coollabs.io/coolify/install.sh -o /root/coolify-install.sh
+      ExecStart=/bin/bash /root/coolify-install.sh
+      StandardOutput=append:/var/log/coolify-install.log
+      StandardError=append:/var/log/coolify-install.log
+      [Install]
+      WantedBy=multi-user.target
+
+runcmd:
+  - systemctl enable --now qemu-guest-agent
+%{ if auto_install ~}
+  - systemctl enable --now coolify-install.service
+%{ endif ~}
+
+final_message: "Coolify VM up. Installer ${auto_install ? "running -> tail /var/log/coolify-install.log; dashboard on http://<ip>:8000 when done" : "NOT run -> sudo systemctl start coolify-install.service"}."
