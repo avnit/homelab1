@@ -1,6 +1,6 @@
 # Copy to terraform.tfvars and fill in. Keep the real file out of git.
 
-proxmox_endpoint     = "https://192.168.0.192:8006/" # pve6  (pve7 = 192.168.0.160)
+proxmox_endpoint     = "https://192.168.0.192:8006/" # pve6  (pve7 = .160, .45 node = .45)
 proxmox_api_token    = "terraform@pve!sandbox=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 proxmox_ssh_username = "root"
 

@@ -6,8 +6,8 @@
 # dashboard from it (static, lighttpd). This version pushes the dashboard file
 # from this repo — run it from a checkout on the Proxmox host:
 #
-#   scp -r homelab-selfhosted-stack root@192.168.0.45:/root/
-#   ssh root@192.168.0.45 'bash /root/homelab-selfhosted-stack/provision/deploy-inventory-lxc.sh'
+#   scp -r homelab1 root@192.168.0.45:/root/
+#   ssh root@192.168.0.45 'bash /root/homelab1/provision/deploy-inventory-lxc.sh'
 #
 # Overridable, e.g. a fixed URL or a different HTML file:
 #   CTIP=192.168.0.46/24 CTGW=192.168.0.1 bash deploy-inventory-lxc.sh
@@ -28,7 +28,7 @@ ROOTFS_STORE="${ROOTFS_STORE:-local-lvm}"
 TMPL_STORE="${TMPL_STORE:-local}"
 CTIP="${CTIP:-dhcp}"          # or a static CIDR, e.g. 192.168.0.46/24
 CTGW="${CTGW:-}"              # gateway, required if CTIP is static (e.g. 192.168.0.1)
-HTML_FILE="${HTML_FILE:-$(cd "$(dirname "$0")/.." && pwd)/dashboard/awesome-selfhosted-inventory.html}"
+HTML_FILE="${HTML_FILE:-$(cd "$(dirname "$0")/.." && pwd)/dashboard/index.html}"
 
 die(){ echo "ERROR: $*" >&2; exit 1; }
 log(){ echo -e "\n==> $*"; }

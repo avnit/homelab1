@@ -1,7 +1,7 @@
 # homelab-selfhosted-stack
 
 Infrastructure-as-Code and hardened runners for a **Proxmox** homelab, distilled from a
-"self-hosting GitHub repos" video and adapted to a two-node cluster (pve6 / pve7).
+"self-hosting GitHub repos" video and adapted to a Proxmox cluster (pve6 · pve7 · the .45 node).
 
 Rather than blindly `curl | bash`-ing things onto the hypervisor, each component here is either
 Terraform (reproducible, destroyable) or a security-reviewed runner.
@@ -12,10 +12,29 @@ Terraform (reproducible, destroyable) or a security-reviewed runner.
 |------|--------------|-----------|
 | `terraform/coolify/` | Dedicated VM running [Coolify](https://github.com/coollabsio/coolify) — a self-hostable Heroku/Netlify/Vercel PaaS | pve7 VM |
 | `terraform/khuedoan-homelab-sandbox/` | Isolated eval VM for [khuedoan/homelab](https://github.com/khuedoan/homelab) (k3s/GitOps, **ALPHA**) — zero contact with prod workloads | pve6/pve7 throwaway VM |
+| `provision/provision-coolify.sh` | **No-Terraform** path: create the Coolify VM with pure `qm` + cloud-init (for old/absent Terraform) | Proxmox host |
 | `proxmox-helper-scripts/` | Hardened runner for [community-scripts/ProxmoxVE](https://github.com/community-scripts/ProxmoxVE): run the one-command LXC installers from **your pinned, audited fork** instead of live `main` as root | Proxmox host |
+| `provision/deploy-inventory-lxc.sh` | Create LXC 320 and serve the inventory dashboard (static, lighttpd) | Proxmox host |
+| `dashboard/` | Interactive inventory of all 1,328 [awesome-selfhosted](https://github.com/awesome-selfhosted/awesome-selfhosted) services + tailored picks + CSV | browser |
 
-Two repos from that video are intentionally **not** here: `awesome-selfhosted` is a catalog (a
-bookmark, nothing to deploy), and the deployable ones above are the parts that actually fit a Proxmox lab.
+`awesome-selfhosted` is a catalog, not a deployable app — so rather than deploy it, `dashboard/` turns its
+1,328 services into a searchable inventory with picks tailored to this lab, and `provision/deploy-inventory-lxc.sh`
+serves that dashboard from an LXC.
+
+## Dashboard
+
+**Live: <https://avnit.github.io/homelab1/>**
+
+`dashboard/index.html` is a single self-contained page — no build step, no external assets. Two ways to serve it:
+
+| Where | How |
+|-------|-----|
+| **GitHub Pages** (public) | Automatic. `.github/workflows/pages.yml` publishes `dashboard/` on every push to `master` that touches it. |
+| **LXC on the lab** (private) | `bash provision/deploy-inventory-lxc.sh` — creates LXC 320 and serves the same file via lighttpd. |
+
+The CSV is published alongside it at
+[`/awesome-selfhosted-inventory.csv`](https://avnit.github.io/homelab1/awesome-selfhosted-inventory.csv).
+Opening `dashboard/index.html` straight off disk works too.
 
 ## Prerequisites
 
@@ -25,6 +44,18 @@ bookmark, nothing to deploy), and the deployable ones above are the parts that a
 
 **On your workstation:**
 - Terraform ≥ 1.5, an SSH keypair.
+
+## Cluster targets
+
+| Node | IP | API endpoint |
+|------|----|--------------|
+| pve6 | 192.168.0.192 | `https://192.168.0.192:8006/` |
+| pve7 | 192.168.0.160 | `https://192.168.0.160:8006/` |
+| _.45 node_ | 192.168.0.45 | `https://192.168.0.45:8006/` |
+
+Any module or script can target any node — set `proxmox_endpoint` + `node_name` (Terraform) or the
+`root@<ip>` you SSH to (scripts). Set `node_name` to that node's real Proxmox hostname; I don't have the
+hostname for the `.45` node, so fill it in there.
 
 ## Quickstart
 
@@ -59,9 +90,15 @@ See each subdirectory's `README.md` for the full rationale and caveats.
 ## Layout
 
 ```
-homelab-selfhosted-stack/
+homelab1/
+├── .github/workflows/pages.yml   # publishes dashboard/ to GitHub Pages
 ├── terraform/
 │   ├── coolify/
 │   └── khuedoan-homelab-sandbox/
+├── provision/
+│   ├── provision-coolify.sh
+│   ├── finish-coolify-install.sh
+│   └── deploy-inventory-lxc.sh
+├── dashboard/                    # index.html (self-contained) + CSV + recommendations
 └── proxmox-helper-scripts/
 ```

@@ -1,6 +1,6 @@
 # Copy to terraform.tfvars and fill in. Keep the real file out of git.
 
-proxmox_endpoint  = "https://192.168.0.160:8006/" # pve7
+proxmox_endpoint  = "https://192.168.0.160:8006/" # pve7  (pve6 = .192, .45 node = .45)
 proxmox_api_token = "terraform@pve!coolify=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 
 node_name    = "pve7"
