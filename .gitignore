@@ -1,0 +1,24 @@
+# --- Terraform ---
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
+# Secrets: keep real tfvars out of git, track only the examples
+*.tfvars
+!*.tfvars.example
+
+# --- Local / packaging ---
+*.bundle
+*.tar.gz
+.DS_Store
+
+# Provider lock is platform-specific; generate locally via terraform init
+.terraform.lock.hcl
