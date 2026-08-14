@@ -102,3 +102,24 @@ homelab1/
 ├── dashboard/                    # index.html (self-contained) + CSV + recommendations
 └── proxmox-helper-scripts/
 ```
+
+<!-- ARCH-DIAGRAM:START -->
+
+## Architecture
+
+> Auto-generated architecture diagram. See [`docs/context-map.md`](docs/context-map.md) for the full context map (core application, containers/cloud, and database connections).
+
+```mermaid
+flowchart TD
+  User([User / Client])
+  App["homelab1"]
+  SVC0["Cloudflare Workers"]
+  TF["Terraform<br/>(infra)"]
+  Deploy["GitHub Pages"]
+  User --> App
+  App --> SVC0
+  App -.deploy.-> TF
+  TF -.deploy.-> Deploy
+```
+
+<!-- ARCH-DIAGRAM:END -->
