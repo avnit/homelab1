@@ -57,12 +57,19 @@ for f in "${files[@]}"; do
 done
 echo "    rewrote ${#files[@]} file(s)"
 
-echo "==> Verifying no upstream 'main' references remain..."
-if grep -rn --exclude-dir=.git "community-scripts/ProxmoxVE/main" "${DEST}"; then
-  echo "!!  WARNING: references above still point at upstream main -- review before running."
+echo "==> Verifying no upstream 'main' fetch URLs remain..."
+# Only runtime fetch URLs matter here -- the same two forms rewritten above.
+# A prose mention of the branch 'community-scripts/ProxmoxVE/main' in docs
+# (e.g. CONTRIBUTING.md telling contributors to open PRs against upstream main)
+# is NOT fetched at runtime and must not fail the hardening.
+if grep -rnE --exclude-dir=.git \
+     -e "raw\.githubusercontent\.com/${UPSTREAM}" \
+     -e "github\.com/community-scripts/ProxmoxVE/raw/main" \
+     "${DEST}"; then
+  echo "!!  WARNING: fetch URLs above still point at upstream main -- review before running."
   exit 1
 fi
-echo "    OK: everything now resolves to ${FORK_REF}"
+echo "    OK: every runtime fetch now resolves to ${FORK_REF}"
 
 cat <<EOF
 
